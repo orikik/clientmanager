@@ -46,6 +46,12 @@ public class ClientRepositoryTest extends RepositoryTestBase {
         assertClient(res, clientEntity);
     }
 
+    @Test
+    public void getClientByPartnerCodeTest() {
+        ClientEntity res = clientRepository.findByPartnerCode(clientEntity.getPartnerCode()).get();
+        assertClient(res, clientEntity);
+    }
+
     @Test(expected = NoSuchElementException.class)
     public void deleteClientByIdTest() {
         clientRepository.deleteById(clientEntity.getId());

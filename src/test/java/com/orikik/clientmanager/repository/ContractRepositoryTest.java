@@ -66,9 +66,22 @@ public class ContractRepositoryTest extends RepositoryTestBase {
         assertContract(res, contractEntity);
     }
 
+    @Test
+    public void getContractByAddendumNumberTest() {
+        ContractEntity res = contractRepository.findByAddendumNumber(contractEntity.getAddendumNumber()).get();
+        assertContract(res, contractEntity);
+    }
+
     @Test(expected = NoSuchElementException.class)
     public void deleteContractByIdTest() {
         contractRepository.deleteById(contractEntity.getId());
+        contractRepository.findById(contractEntity.getId()).get();
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void deleteContractByUserAndClientEntityTest() {
+        contractRepository.deleteAllByUserEntityAndClientEntity
+                (contractEntity.getUserEntity(), contractEntity.getClientEntity());
         contractRepository.findById(contractEntity.getId()).get();
     }
 
