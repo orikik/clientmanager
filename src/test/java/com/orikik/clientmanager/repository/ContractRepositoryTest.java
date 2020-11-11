@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.Assert.assertEquals;
@@ -70,6 +71,21 @@ public class ContractRepositoryTest extends RepositoryTestBase {
     public void getContractByAddendumNumberTest() {
         ContractEntity res = contractRepository.findByAddendumNumber(contractEntity.getAddendumNumber()).get();
         assertContract(res, contractEntity);
+    }
+
+    @Test
+    public void getContractByUserEntityTest() {
+        List<ContractEntity> res = contractRepository.findByUserEntity(contractEntity.getUserEntity()).get();
+        assertEquals(1, res.size());
+        assertContract(res.get(0), contractEntity);
+    }
+
+    @Test
+    public void getContractByUserAndClientEntityTest() {
+        List<ContractEntity> res = contractRepository.findByUserEntityAndClientEntity
+                (contractEntity.getUserEntity(), contractEntity.getClientEntity()).get();
+        assertEquals(1, res.size());
+        assertContract(res.get(0), contractEntity);
     }
 
     @Test(expected = NoSuchElementException.class)
