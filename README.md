@@ -1,2 +1,2 @@
 ### Description ###
-* Project for client menager notifications
+* Project for client manager notifications
