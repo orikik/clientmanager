@@ -1,7 +1,9 @@
 package com.orikik.clientmanager.service;
 
 import com.orikik.clientmanager.converter.ContractConverter;
+import com.orikik.clientmanager.converter.UserConverter;
 import com.orikik.clientmanager.dto.ContractDto;
+import com.orikik.clientmanager.dto.UserDto;
 import com.orikik.clientmanager.entity.ClientEntity;
 import com.orikik.clientmanager.entity.ContractEntity;
 import com.orikik.clientmanager.entity.UserEntity;
@@ -13,16 +15,25 @@ import com.orikik.clientmanager.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @Transactional
 public class ContractService {
     private static final Logger LOG = LoggerFactory.getLogger(ContractService.class);
+    @Value("${profile.date.min}")
+    private int deltaDaysFrom;
+    @Value("${profile.date.max}")
+    private int deltaDaysTo;
 
     @Autowired
     private ContractRepository contractRepository;
@@ -30,6 +41,10 @@ public class ContractService {
     private ClientRepository clientRepository;
     @Autowired
     private UserRepository userRepository;
+    @Resource(name = "telegramNotifier")
+    private NotifierService telegramNotifier;
+    @Resource(name = "emailNotifier")
+    private NotifierService emailNotifier;
 
     public ContractDto createContract(ContractDto contractDto, String username, Long partnerCode) {
         Optional<UserEntity> userEntityOptional = userRepository.findByUsername(username);
@@ -81,5 +96,49 @@ public class ContractService {
             throw new UsernameNotFoundException("User not found");
         }
         return contractEntity;
+    }
+
+    @Scheduled(cron = "${profile.cron}")
+    public void notifyAboutTheEndContract() {
+        LocalDate minDate = LocalDate.now().plusDays(deltaDaysFrom);
+        LocalDate maxDate = LocalDate.now().plusDays(deltaDaysTo);
+        Optional<List<ContractEntity>> contractEntities =
+                contractRepository.findAllByExpirationDateBetween(minDate, maxDate);
+        if (!contractEntities.isPresent()) {
+            return;
+        }
+        List<ContractEntity> contractEntityList = contractEntities.get();
+        for (ContractEntity contractEntity : contractEntityList) {
+            String messageText = "У клиента с партнерским номером " + contractEntity.getClientEntity().getPartnerCode()
+                    + " заканчивается " + contractEntity.getExpirationDate()
+                    + " договор под номером аддендума " + contractEntity.getAddendumNumber() + ".";
+            String header = "Окончание срока контракта";
+            UserEntity userEntity = contractEntity.getUserEntity();
+            UserDto userDto = UserConverter.convert(userEntity);
+            sendNotification(userDto, header, messageText);
+        }
+    }
+
+    private void sendNotification(UserDto userDto, String header, String messageText) {
+        Long telegramId = userDto.getTelegramId();
+        if (userDto.getNotifyEnum() == null) {
+            return;
+        }
+        switch (userDto.getNotifyEnum()) {
+            case ALL:
+                if (telegramId != null) {
+                    telegramNotifier.notifyUser(userDto, null, messageText);
+                }
+                emailNotifier.notifyUser(userDto, header, messageText);
+                break;
+            case EMAIL:
+                emailNotifier.notifyUser(userDto, header, messageText);
+                break;
+            case TELEGRAM:
+                if (telegramId != null) {
+                    telegramNotifier.notifyUser(userDto, null, messageText);
+                }
+                break;
+        }
     }
 }

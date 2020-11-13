@@ -57,4 +57,9 @@ public class UserController {
                                                           @RequestParam(required = true) Long partnerCode) {
         return userService.findAllClientContractsOfUser(principal.getName(), partnerCode);
     }
+
+    @PutMapping("/notify")
+    public void updateUser(Principal principal, @RequestParam(required = false) String notifyType) {
+        userService.setNotifierService(principal.getName(), notifyType);
+    }
 }

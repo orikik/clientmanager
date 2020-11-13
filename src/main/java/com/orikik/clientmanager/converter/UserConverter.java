@@ -2,6 +2,7 @@ package com.orikik.clientmanager.converter;
 
 import com.orikik.clientmanager.dto.UserDto;
 import com.orikik.clientmanager.entity.UserEntity;
+import com.orikik.clientmanager.utils.NotifyEnum;
 
 public class UserConverter {
     public static UserDto convert(UserEntity userEntity) {
@@ -17,6 +18,10 @@ public class UserConverter {
         userDto.setMiddlename(userEntity.getMiddlename());
         userDto.setEmail(userEntity.getEmail());
         userDto.setPhoneNumber(userEntity.getPhoneNumber());
+        userDto.setTelegramId(userEntity.getTelegramId());
+        if (userEntity.getNotifyType() != null) {
+            userDto.setNotifyEnum(NotifyEnum.valueOf(userEntity.getNotifyType()));
+        }
         return userDto;
     }
 
@@ -33,6 +38,10 @@ public class UserConverter {
         userEntity.setMiddlename(userDto.getMiddlename());
         userEntity.setEmail(userDto.getEmail());
         userEntity.setPhoneNumber(userDto.getPhoneNumber());
+        userEntity.setTelegramId(userDto.getTelegramId());
+        if (userDto.getNotifyEnum() != null) {
+            userEntity.setNotifyType(String.valueOf(userDto.getNotifyEnum()));
+        }
         return userEntity;
     }
 }

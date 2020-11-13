@@ -11,6 +11,7 @@ import com.orikik.clientmanager.exception.ClientManagerException;
 import com.orikik.clientmanager.repository.ClientRepository;
 import com.orikik.clientmanager.repository.ContractRepository;
 import com.orikik.clientmanager.repository.UserRepository;
+import com.orikik.clientmanager.utils.NotifyEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -203,6 +204,46 @@ public class UserServiceTest extends RepositoryTestBase {
         when(clientRepository.findByPartnerCode(any())).thenReturn(clientEntityOptional);
         when(contractRepository.findByUserEntityAndClientEntity(any(), any())).thenReturn(optionalContractEntityList);
         userService.findAllClientContractsOfUser(generateUserDto().getUsername(), generateClientDto().getPartnerCode());
+    }
+
+    @Test
+    public void setNotifierService_allServices() {
+        Optional<UserEntity> userEntityOptional = Optional.of(generateUserEntity());
+        when(userRepository.findByUsername(any())).thenReturn(userEntityOptional);
+        UserEntity userEntity = userEntityOptional.get();
+        userService.setNotifierService(userEntity.getUsername(), NotifyEnum.ALL.name());
+        userEntity.setNotifyType(NotifyEnum.ALL.name());
+        verify(userRepository).save(userEntity);
+    }
+
+    @Test
+    public void setNotifierService_telegramServices() {
+        Optional<UserEntity> userEntityOptional = Optional.of(generateUserEntity());
+        when(userRepository.findByUsername(any())).thenReturn(userEntityOptional);
+        UserEntity userEntity = userEntityOptional.get();
+        userService.setNotifierService(userEntity.getUsername(), NotifyEnum.TELEGRAM.name());
+        userEntity.setNotifyType(NotifyEnum.TELEGRAM.name());
+        verify(userRepository).save(userEntity);
+    }
+
+    @Test
+    public void setNotifierService_emailServices() {
+        Optional<UserEntity> userEntityOptional = Optional.of(generateUserEntity());
+        when(userRepository.findByUsername(any())).thenReturn(userEntityOptional);
+        UserEntity userEntity = userEntityOptional.get();
+        userService.setNotifierService(userEntity.getUsername(), NotifyEnum.EMAIL.name());
+        userEntity.setNotifyType(NotifyEnum.EMAIL.name());
+        verify(userRepository).save(userEntity);
+    }
+
+    @Test
+    public void setNotifierService_null() {
+        Optional<UserEntity> userEntityOptional = Optional.of(generateUserEntity());
+        when(userRepository.findByUsername(any())).thenReturn(userEntityOptional);
+        UserEntity userEntity = userEntityOptional.get();
+        userService.setNotifierService(userEntity.getUsername(), null);
+        userEntity.setNotifyType(null);
+        verify(userRepository).save(userEntity);
     }
 
     private UserEntity generateUserEntity() {

@@ -1,5 +1,7 @@
 package com.orikik.clientmanager.dto;
 
+import com.orikik.clientmanager.utils.NotifyEnum;
+
 public class UserDto {
     private Long id;
     private String username;
@@ -9,6 +11,24 @@ public class UserDto {
     private String middlename;
     private String phoneNumber;
     private String email;
+    private Long telegramId;
+    private NotifyEnum notifyEnum;
+
+    public NotifyEnum getNotifyEnum() {
+        return notifyEnum;
+    }
+
+    public void setNotifyEnum(NotifyEnum notifyEnum) {
+        this.notifyEnum = notifyEnum;
+    }
+
+    public Long getTelegramId() {
+        return telegramId;
+    }
+
+    public void setTelegramId(Long telegramId) {
+        this.telegramId = telegramId;
+    }
 
     public Long getId() {
         return id;

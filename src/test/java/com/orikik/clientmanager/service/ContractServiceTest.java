@@ -9,6 +9,7 @@ import com.orikik.clientmanager.exception.ClientManagerException;
 import com.orikik.clientmanager.repository.ClientRepository;
 import com.orikik.clientmanager.repository.ContractRepository;
 import com.orikik.clientmanager.repository.UserRepository;
+import com.orikik.clientmanager.utils.NotifyEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,10 @@ public class ContractServiceTest extends RepositoryTestBase {
     private ContractRepository contractRepository;
     @Autowired
     private ContractService contractService;
+    @MockBean(name = "telegramNotifier")
+    private NotifierService telegramNotifier;
+    @MockBean(name = "emailNotifier")
+    private NotifierService emailNotifier;
 
     @Test
     public void createContractTest() {
@@ -129,6 +134,20 @@ public class ContractServiceTest extends RepositoryTestBase {
         contractService.deleteContract(generateContractDto().getAddendumNumber(), generateUserEntity().getUsername());
     }
 
+    @Test
+    public void notifyAboutTheEndContract() {
+        Optional<List<ContractEntity>> contractEntityOptionalList = Optional.of(createContractEntityList());
+        UserEntity userEntity = generateUserEntity();
+        userEntity.setTelegramId(0L);
+        userEntity.setNotifyType(NotifyEnum.ALL.name());
+        Optional<UserEntity> userEntityOptional = Optional.of(userEntity);
+        when(contractRepository.findAllByExpirationDateBetween(any(), any())).thenReturn(contractEntityOptionalList);
+        when(userRepository.findByUsername(any())).thenReturn(userEntityOptional);
+        contractService.notifyAboutTheEndContract();
+        verify(telegramNotifier).notifyUser(any(), any(), any());
+        verify(emailNotifier).notifyUser(any(), any(), any());
+    }
+
     private ClientEntity generateClientEntity() {
         ClientEntity clientEntity = new ClientEntity();
         clientEntity.setId(1L);
@@ -175,6 +194,8 @@ public class ContractServiceTest extends RepositoryTestBase {
         List<ContractEntity> contractEntities = new ArrayList<>();
         ContractEntity contractEntity = generateContractEntity();
         contractEntity.setClientEntity(generateClientEntity());
+        contractEntity.getUserEntity().setTelegramId(0L);
+        contractEntity.getUserEntity().setNotifyType(NotifyEnum.ALL.name());
         contractEntities.add(contractEntity);
         return contractEntities;
     }

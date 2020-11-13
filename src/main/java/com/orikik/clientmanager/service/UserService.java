@@ -86,6 +86,12 @@ public class UserService {
         return ContractConverter.convert(optionalContractEntityList.get());
     }
 
+    public void setNotifierService(String username, String notifyType) {
+        UserEntity userEntity = getUserEntity(username);
+        userEntity.setNotifyType(notifyType);
+        userRepository.save(userEntity);
+    }
+
     public UserEntity getUserEntity(String username) {
         Optional<UserEntity> userEntityOptional = userRepository.findByUsername(username);
         if (!userEntityOptional.isPresent()) {

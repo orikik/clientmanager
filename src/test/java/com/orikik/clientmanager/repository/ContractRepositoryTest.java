@@ -54,7 +54,7 @@ public class ContractRepositoryTest extends RepositoryTestBase {
 
         contractEntity.setAddendumNumber(123L);
         contractEntity.setCost(12345678L);
-        contractEntity.setExpirationDate(LocalDate.now());
+        contractEntity.setExpirationDate(LocalDate.now().plusDays(20));
         contractEntity.setProduct("osago");
         contractEntity.setClientEntity(clientEntity);
         contractEntity.setUserEntity(userEntity);
@@ -88,6 +88,24 @@ public class ContractRepositoryTest extends RepositoryTestBase {
         assertContract(res.get(0), contractEntity);
     }
 
+    @Test
+    public void findAllByExpirationDateBetweenTest() {
+        ContractEntity contractEntityBadDate = new ContractEntity();
+        contractEntityBadDate.setAddendumNumber(1233L);
+        contractEntityBadDate.setCost(123456789L);
+        contractEntityBadDate.setExpirationDate(LocalDate.now());
+        contractEntityBadDate.setProduct("osago");
+        contractEntityBadDate.setClientEntity(clientEntity);
+        contractEntityBadDate.setUserEntity(userEntity);
+        contractRepository.save(contractEntityBadDate);
+
+        List<ContractEntity> res = contractRepository.findAllByExpirationDateBetween
+                (LocalDate.now().plusDays(19), LocalDate.now().plusDays(21)).get();
+        assertEquals(1, res.size());
+        assertContract(res.get(0), contractEntity);
+    }
+
+
     @Test(expected = NoSuchElementException.class)
     public void deleteContractByIdTest() {
         contractRepository.deleteById(contractEntity.getId());
@@ -106,7 +124,7 @@ public class ContractRepositoryTest extends RepositoryTestBase {
         assertNotNull(actually);
         assertEquals(123L, expected.getAddendumNumber().longValue());
         assertEquals("osago", expected.getProduct());
-        assertEquals(LocalDate.now(), expected.getExpirationDate());
+        assertEquals(LocalDate.now().plusDays(20), expected.getExpirationDate());
         assertEquals(12345678, expected.getCost().longValue());
         assertEquals(userEntity, expected.getUserEntity());
         assertEquals(clientEntity, expected.getClientEntity());

@@ -22,6 +22,26 @@ public class UserEntity {
     @Column(name = "phone_number")
     private String phoneNumber;
     private String email;
+    @Column(name = "telegram_id")
+    private Long telegramId;
+    @Column(name = "notify_service")
+    private String notifyType;
+
+    public String getNotifyType() {
+        return notifyType;
+    }
+
+    public void setNotifyType(String notifyEnum) {
+        this.notifyType = notifyEnum;
+    }
+
+    public Long getTelegramId() {
+        return telegramId;
+    }
+
+    public void setTelegramId(Long telegramId) {
+        this.telegramId = telegramId;
+    }
 
     public Long getId() {
         return id;
